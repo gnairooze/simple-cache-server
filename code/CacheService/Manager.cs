@@ -3,36 +3,20 @@ using System;
 
 namespace CacheService
 {
-    public class Manager(IMemoryCache cache) : IDisposable
+    public class Manager
     {
-        private readonly IMemoryCache _cache = cache;
+        private static IMemoryCache? _cache;
+        private static object _lock = new ();
 
-        public void Set<T>(string key, T value)
+        public static IMemoryCache GetCacheInstance()
         {
-            _cache.Set(key, value);
-        }
-
-        public void Set<T>(string key, T value, TimeSpan absoluteExpirationRelativeToNow)
-        {
-            _cache.Set(key, value, absoluteExpirationRelativeToNow);
-        }
-
-        public T? Get<T>(string key)
-        {
-            return _cache.Get<T>(key);
-        }
-
-        public void Remove(string key)
-        {
-            _cache.Remove(key);
-        }
-
-        public void Dispose()
-        {
-            _cache.Dispose();
-
-            //Message CA1816  Change Manager.Dispose() to call GC.SuppressFinalize(object).This will prevent derived types that introduce a finalizer from needing to re - implement 'IDisposable' to call it. A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this.
-            GC.SuppressFinalize(this); 
+            lock(_lock)
+            {
+                // if the cache is not initialized (_cache == null), create a new instance
+                _cache ??= new MemoryCache(new MemoryCacheOptions());
+            }
+            
+            return _cache;
         }
     }
 }

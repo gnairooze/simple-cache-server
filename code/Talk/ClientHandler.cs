@@ -8,8 +8,9 @@ namespace Talk
     {
         private readonly ILogger _logger = logger;
         internal event EventHandler<MessageEventArgs>? MessageReceived;
+        internal event EventHandler<ClientEventArgs>? ClientChanged;
 
-        public async Task HandleAsync(TcpClient client)
+        public async Task HandleAsync(TcpClient client, ClientMetaData clientMetadata)
         {
             try
             {
@@ -27,8 +28,16 @@ namespace Talk
                     MessageReceived?.Invoke(this, new MessageEventArgs(receivedData));
 
                     // Send a response back to the client
-                    byte[] response = Encoding.UTF8.GetBytes("Server received your message!");
+                    string responseMessage = "Server received your message!";
+                    byte[] response = Encoding.UTF8.GetBytes(responseMessage);
                     await stream.WriteAsync(response);
+                    
+                    clientMetadata.Transactions.Add(new Transaction()
+                    {
+                        RunDate = DateTime.Now,
+                        Message = receivedData,
+                        Response = responseMessage
+                    });
                 }
             }
             catch (Exception ex)
@@ -37,8 +46,11 @@ namespace Talk
             }
             finally
             {
+                var clientEndPoint = client.Client.RemoteEndPoint;
+
                 client.Close();
                 _logger.Information("Client disconnected");
+                ClientChanged?.Invoke(this, new ClientEventArgs(clientEndPoint!.ToString()!, Enums.ClientStatus.Disconnected));
             }
         }
 

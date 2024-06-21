@@ -19,8 +19,7 @@ try
     }
 
     Console.WriteLine("enter the server's port number: (default 12345)");
-    int port = 0;
-    var portParsingSucceeded = int.TryParse(Console.ReadLine(), out port);
+    var portParsingSucceeded = int.TryParse(Console.ReadLine(), out int port);
 
     if (!portParsingSucceeded)
     {
@@ -49,12 +48,12 @@ try
         }
 
         byte[] dataToSend = Encoding.ASCII.GetBytes(messageToSend);
-        await stream.WriteAsync(dataToSend, 0, dataToSend.Length);
+        await stream.WriteAsync(dataToSend);
         Console.WriteLine($"sent: {messageToSend}");
 
         // Read the server's response (optional)
         byte[] buffer = new byte[1024];
-        int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+        int bytesRead = await stream.ReadAsync(buffer);
         string response = Encoding.ASCII.GetString(buffer, 0, bytesRead);
         Console.WriteLine($"received: {response}");
 

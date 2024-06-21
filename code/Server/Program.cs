@@ -2,12 +2,11 @@
 
 using System;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Talk;
 
 //create instance of ServerListener and pass a serilog instance that logs to console to it
-Serilog.ILogger logger = new LoggerConfiguration()
+Serilog.Core.Logger logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
